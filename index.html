@@ -12,7 +12,7 @@
 <!-- ================= LOGIN ================= -->
 <div id="loginScreen">
   <div class="loginBox">
-    <div class="brandMark">C&amp;R</div>
+    <div class="brandMark"></div>
     <h1>Cue &amp; Room</h1>
     <p>Staff sign-in</p>
     <input type="text" id="loginUsername" placeholder="Username" autocomplete="username">
@@ -25,10 +25,19 @@
 
 <!-- ================= APP ================= -->
 <div id="app">
+  <div id="topbar">
+    <button id="sidebarToggle" onclick="toggleSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbarBrand">Cue &amp; Room</div>
+  </div>
+  <div id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
   <div id="sidebar">
     <div class="brand">
-      <div class="mark">C&amp;R</div>
+      <div class="mark"></div>
       <div class="name">Cue &amp; Room</div>
+      <div class="tag">Billiard &amp; KTV</div>
     </div>
     <div class="who" id="whoText"></div>
     <nav>
