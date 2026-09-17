@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cue &amp; Room — Billiard &amp; KTV Management System</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginScreen">
+  <div class="loginBox">
+    <div class="brandMark">C&amp;R</div>
+    <h1>Cue &amp; Room</h1>
+    <p>Staff sign-in</p>
+    <input type="text" id="loginUsername" placeholder="Username" autocomplete="username">
+    <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button onclick="handleLogin()">Sign in</button>
+    <div id="msgLogin"></div>
+    <div class="loginFooter">Default admin account — username <b>admin</b>, password <b>admin123</b></div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div id="sidebar">
+    <div class="brand">
+      <div class="mark">C&amp;R</div>
+      <div class="name">Cue &amp; Room</div>
+    </div>
+    <div class="who" id="whoText"></div>
+    <nav>
+      <button data-tab="dashboard" onclick="showTab('dashboard')">Live dashboard</button>
+      <button data-tab="reservations" onclick="showTab('reservations')">Reservations</button>
+      <button data-tab="walkin" onclick="showTab('walkin')">Walk-in queue</button>
+      <button data-tab="drinks" onclick="showTab('drinks')">Drinks &amp; inventory</button>
+      <button data-tab="billing" onclick="showTab('billing')">Billing</button>
+      <button data-tab="history" onclick="showTab('history')">Transaction history</button>
+      <button data-tab="staff" class="adminOnly" onclick="showTab('staff')">Staff accounts</button>
+    </nav>
+    <div class="sidebarFooter">
+      <button onclick="handleLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- ===== LIVE DASHBOARD ===== -->
+    <div class="section" id="tab-dashboard">
+      <div class="pageHeader">
+        <h2>Live tables &amp; KTV dashboard</h2>
+        <p class="algo">Updates automatically every second. 3 billiard tables and 1 KTV room.</p>
+      </div>
+      <div id="dashboardGrid" class="dashGrid"></div>
+    </div>
+
+    <!-- ===== RESERVATIONS ===== -->
+    <div class="section" id="tab-reservations">
+      <div class="pageHeader">
+        <h2>Reservation booking</h2>
+        <p class="algo">Reserve ahead of time. Staff can start a session early if the facility is free.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="resCustomer" placeholder="Customer name">
+          <input type="text" id="resContact" placeholder="Contact number (optional)">
+        </div>
+        <div class="row">
+          <select id="resFacilityType" onchange="populateFacilitySelect('resFacilitySelect', document.getElementById('resFacilityType').value)">
+            <option value="Billiard">Billiard table</option>
+            <option value="KTV">KTV room</option>
+          </select>
+          <select id="resFacilitySelect"></select>
+        </div>
+        <div class="row">
+          <input type="date" id="resDate">
+          <input type="time" id="resStartTime">
+        </div>
+        <div class="row">
+          <select id="resDurationSelect">
+            <option value="30">30 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4 hours</option>
+            <option value="300">5 hours</option>
+            <option value="360">6 hours</option>
+            <option value="420">7 hours</option>
+            <option value="480">8 hours</option>
+          </select>
+          <input type="text" id="resDurationManual" placeholder='or type e.g. "1 hour 30 minutes"'>
+        </div>
+        <div class="row"><button onclick="handleCreateReservation()">Create reservation</button></div>
+        <div id="resMsg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <input type="text" id="resSearchInput" placeholder="Search reservation by customer name or ID">
+          <button class="secondary" onclick="handleReservationSearch()">Find reservation</button>
+        </div>
+        <div id="resSearchMsg" class="msg"></div>
+      </div>
+
+      <table>
+        <thead><tr><th>ID</th><th>Customer</th><th>Facility</th><th>Date</th><th>Sched. start</th><th>Sched. end</th><th>Duration</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="reservationsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== WALK-IN ===== -->
+    <div class="section" id="tab-walkin">
+      <div class="pageHeader">
+        <h2>Walk-in queue</h2>
+        <p class="algo">For customers without a reservation. Waits in queue if all matching facilities are occupied.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="wiCustomer" placeholder="Customer name">
+          <select id="wiFacilityType">
+            <option value="Billiard">Billiard table</option>
+            <option value="KTV">KTV room</option>
+          </select>
+        </div>
+        <div class="row">
+          <select id="wiDurationSelect">
+            <option value="30">30 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4 hours</option>
+            <option value="300">5 hours</option>
+            <option value="360">6 hours</option>
+            <option value="420">7 hours</option>
+            <option value="480">8 hours</option>
+          </select>
+          <input type="text" id="wiDurationManual" placeholder='or type e.g. "90 minutes"'>
+        </div>
+        <div class="row"><button onclick="handleAddWalkIn()">Add to queue</button></div>
+        <div id="wiMsg" class="msg"></div>
+      </div>
+      <table>
+        <thead><tr><th>Queue #</th><th>Customer</th><th>Wants</th><th>Duration</th><th>Time added</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="walkinBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== DRINKS & INVENTORY ===== -->
+    <div class="section" id="tab-drinks">
+      <div class="pageHeader">
+        <h2>Inventory management</h2>
+        <p class="algo">Add, restock, edit, or delete drinks. Stock automatically updates status.</p>
+      </div>
+
+      <div class="card">
+        <h3>Add new drink</h3>
+        <div class="row">
+          <input type="text" id="newDrinkName" placeholder="Drink name">
+          <select id="newDrinkCategory"></select>
+          <input type="number" id="newDrinkStock" placeholder="Stock qty" min="0" value="10">
+          <input type="number" id="newDrinkPrice" placeholder="Selling price (₱)" min="0" value="50">
+          <button onclick="handleAddDrink()">Add drink</button>
+        </div>
+        <div id="addDrinkMsg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <h3>Restock drink</h3>
+        <div class="row">
+          <select id="restockDrinkSelect"></select>
+          <input type="number" id="restockQty" placeholder="Additional qty" min="1" value="10">
+          <button class="secondary" onclick="handleRestock()">Restock</button>
+        </div>
+        <div id="restockMsg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <h3>Edit drink</h3>
+        <div class="row">
+          <select id="editDrinkSelect" onchange="loadDrinkForEdit()"></select>
+          <input type="text" id="editDrinkName" placeholder="Name">
+          <select id="editDrinkCategory"></select>
+          <input type="number" id="editDrinkPrice" placeholder="Price" min="0">
+          <input type="number" id="editDrinkStock" placeholder="Stock" min="0">
+        </div>
+        <div class="row">
+          <button class="secondary" onclick="handleEditDrink()">Save changes</button>
+          <button class="danger" onclick="handleDeleteDrink()">Delete drink</button>
+        </div>
+        <div id="editDrinkMsg" class="msg"></div>
+      </div>
+
+      <h3 style="margin-top:26px;font-size:16px;color:var(--ink);">Order drinks</h3>
+      <p class="algo" style="margin-bottom:12px;">Session orders attach to an active table or KTV room. Drink-only orders need no facility.</p>
+      <div class="card">
+        <div class="row">
+          <select id="drinkOrderTarget"></select>
+          <select id="drinkSelect"></select>
+          <input type="number" id="drinkQty" placeholder="Qty" min="1" value="1">
+          <button onclick="handleDrinkOrder()">Place order</button>
+        </div>
+        <div id="drinkOrderMsg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <input type="text" id="drinkSearchInput" placeholder="Search by drink name or category" oninput="renderInventory()" onkeyup="if(event.key==='Enter') handleDrinkSearch()">
+          <button class="secondary" onclick="handleDrinkSearch()">Search menu</button>
+          <button class="secondary" onclick="exportInventoryReportPDF()">Export inventory report (PDF)</button>
+        </div>
+        <div id="drinkSearchMsg" class="msg"></div>
+      </div>
+
+      <h3 style="margin-top:24px;font-size:16px;color:var(--ink);">Inventory list</h3>
+      <table>
+        <thead><tr><th>Category</th><th>Drink</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== BILLING ===== -->
+    <div class="section" id="tab-billing">
+      <div class="pageHeader">
+        <h2>Billing</h2>
+        <p class="algo">Combines session fee, extensions, and drinks automatically.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <select id="billTarget" onchange="renderBillPreview()"></select>
+        </div>
+        <div id="billPreview"></div>
+        <div class="row" style="margin-top:10px;">
+          <select id="paymentMethod">
+            <option value="Cash">Cash</option>
+            <option value="GCash">GCash</option>
+          </select>
+          <input type="number" id="amountPaid" placeholder="Amount paid (₱)" min="0">
+          <button onclick="handleCompletePayment()">Complete payment &amp; generate receipt</button>
+        </div>
+        <div id="billMsg" class="msg"></div>
+        <div id="receiptActions"></div>
+      </div>
+    </div>
+
+    <!-- ===== TRANSACTION HISTORY ===== -->
+    <div class="section" id="tab-history">
+      <div class="pageHeader">
+        <h2>Transaction history</h2>
+        <p class="algo">Most recent transaction shown first. Select View for full details or to reprint a PDF receipt.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="historySearchInput" placeholder="Search by transaction ID, customer, facility, type, or payment method" oninput="renderHistory()">
+          <button class="secondary" onclick="exportSalesReportPDF()">Export sales report (PDF)</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Trans. ID</th><th>Type</th><th>Customer</th><th>Facility</th><th>Grand total</th><th>Payment</th><th>Time</th><th>Action</th></tr></thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div id="historyDetail"></div>
+    </div>
+
+    <!-- ===== STAFF ===== -->
+    <div class="section" id="tab-staff">
+      <div class="pageHeader">
+        <h2>Staff accounts</h2>
+        <p class="algo">Manage who can sign in to the system.</p>
+      </div>
+      <div class="card">
+        <div class="row">
+          <input type="text" id="newStaffName" placeholder="Full name">
+          <input type="text" id="newStaffUsername" placeholder="Username">
+          <input type="password" id="newStaffPassword" placeholder="Password">
+          <button onclick="handleCreateStaff()">Create staff account</button>
+        </div>
+        <div id="staffMsg" class="msg"></div>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Username</th><th>Name</th><th>Role</th><th>Action</th></tr></thead>
+        <tbody id="staffBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
