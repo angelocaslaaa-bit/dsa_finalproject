@@ -74,7 +74,8 @@ hr {
 /* ---------- Form elements ---------- */
 input, select, textarea, button {
   width: 100%;
-  padding: 9px 11px;
+  min-height: 38px;
+  padding: 0 12px;
   margin: 4px 0;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
@@ -82,7 +83,10 @@ input, select, textarea, button {
   color: var(--ink);
   font-family: inherit;
   font-size: 13.5px;
+  line-height: 36px;
 }
+
+textarea { line-height: 1.5; padding: 9px 12px; height: auto; }
 
 input::placeholder { color: var(--ink-faint); }
 
@@ -92,15 +96,27 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(31, 92, 70, 0.15);
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6f61' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 13px;
+  padding-right: 32px;
+}
+
+/* Buttons size to their own label, not to sibling fields */
 button {
   width: auto;
+  flex: 0 0 auto;
   background: var(--felt);
   color: #fdfdfa;
   border: 1px solid var(--felt);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  padding: 9px 16px;
+  padding: 0 18px;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 button:hover { background: var(--felt-dark); border-color: var(--felt-dark); }
@@ -129,7 +145,9 @@ button.warnbtn:hover { background: var(--warn-tint); }
 
 button.small {
   width: auto;
-  padding: 5px 10px;
+  min-height: 28px;
+  line-height: 26px;
+  padding: 0 10px;
   font-size: 12px;
   margin: 2px 4px 2px 0;
 }
@@ -157,23 +175,16 @@ button.small {
 }
 
 .loginBox .brandMark {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--felt);
-  margin: 0 auto 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fdfdfa;
-  font-family: 'Source Serif 4', serif;
-  font-weight: 700;
-  font-size: 17px;
+  width: 34px;
+  height: 4px;
+  background: var(--brass);
+  border-radius: 2px;
+  margin: 0 auto 16px;
 }
 
 .loginBox h1 {
   text-align: center;
-  font-size: 20px;
+  font-size: 21px;
   margin-bottom: 3px;
 }
 
@@ -209,35 +220,31 @@ button.small {
 }
 
 #sidebar .brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px 16px;
+  padding: 2px 4px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
   margin-bottom: 14px;
 }
 
 #sidebar .brand .mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+  width: 26px;
+  height: 3px;
   background: var(--brass);
-  color: var(--felt-dark);
-  font-family: 'Source Serif 4', serif;
-  font-weight: 700;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  border-radius: 2px;
+  margin-bottom: 10px;
 }
 
 #sidebar .brand .name {
   color: #fdfdfa;
   font-family: 'Source Serif 4', serif;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1.2;
+}
+
+#sidebar .brand .tag {
+  color: rgba(255,255,255,0.5);
+  font-size: 11px;
+  margin-top: 2px;
 }
 
 #sidebar .who {
@@ -294,6 +301,84 @@ button.small {
   padding: 28px 34px 60px;
   max-width: 1180px;
   overflow-x: auto;
+  min-width: 0;
+}
+
+/* ---------- Mobile top bar & sidebar drawer ---------- */
+#topbar { display: none; }
+#sidebarOverlay { display: none; }
+
+@media (max-width: 880px) {
+  #app { flex-direction: column; }
+
+  #topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  #topbar .topbarBrand {
+    font-family: 'Source Serif 4', serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  #sidebarToggle {
+    width: 36px;
+    height: 36px;
+    min-height: 0;
+    padding: 0;
+    flex: 0 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  #sidebarToggle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+  }
+
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: none;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-pop);
+  }
+
+  #sidebarOverlay.open {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 18, 0.4);
+    z-index: 40;
+  }
+
+  #main { padding: 20px 16px 48px; }
+  .row > input,
+  .row > select,
+  .row > textarea { flex: 1 1 100%; min-width: 0; }
 }
 
 .section { display: none; }
@@ -310,7 +395,14 @@ button.small {
 
 /* ---------- Layout helpers ---------- */
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.row > * { flex: 1; min-width: 140px; }
+.row > input,
+.row > select,
+.row > textarea { flex: 1 1 160px; min-width: 140px; }
+.row > button { flex: 0 0 auto; }
+
+/* A row holding only a single button (e.g. a form submit) should not
+   force that button edge-to-edge — keep it left-aligned and sized to label */
+.row:has(> button:only-child) { justify-content: flex-start; }
 
 .card {
   background: var(--surface);
